@@ -9,6 +9,9 @@ const (
 	CodeInvalidParams
 	CodeInvalidPassword
 	CodeServerBusy
+
+	CodeEmptyToken
+	CodeInvalidToken
 )
 
 var RespMsg = map[RespCode]string{
@@ -18,6 +21,9 @@ var RespMsg = map[RespCode]string{
 	CodeInvalidParams:   "参数错误",
 	CodeInvalidPassword: "用户名或密码错误",
 	CodeServerBusy:      "服务器内部错误",
+
+	CodeEmptyToken:   "请求头中auth为空",
+	CodeInvalidToken: "无效的Token",
 }
 
 // Msg return the message corresponding to the response code

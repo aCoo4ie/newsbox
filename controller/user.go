@@ -60,7 +60,7 @@ func LoginHandler(trans ut.Translator) gin.HandlerFunc {
 			return
 		}
 		// 2. logic
-		err = logic.Login(p)
+		token, err := logic.Login(p)
 		if err != nil {
 			if errors.Is(err, logic.ErrUserNotFound) {
 				ResponseError(c, CodeInvalidPassword)
@@ -72,6 +72,18 @@ func LoginHandler(trans ut.Translator) gin.HandlerFunc {
 		}
 
 		// 3. return response
-		ResponseSuccess(c, "登录成功")
+		// ResponseSuccess(c, "登录成功")
+		ResponseSuccessWithMsg(c, "登录成功", token)
+	}
+}
+
+func UserInfoHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uid, err := GetId(c)
+		if err != nil {
+			ResponseErrorWithMsg(c, CodeInvalidToken, err.Error())
+			return
+		}
+		ResponseSuccess(c, uid)
 	}
 }
