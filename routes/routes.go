@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bluebell/controller"
+	"bluebell/middlewares"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ func Init(trans ut.Translator) *gin.Engine {
 	// register all routes, starting with lower case can decouple
 	registerDefaultRoute(r)
 	registerNotFoundRoute(r)
-	registerSignUpRoute(r, trans)
+	registerUserRoute(r, trans)
 
 	return r
 }
@@ -32,27 +33,9 @@ func registerNotFoundRoute(r *gin.Engine) {
 	})
 }
 
-// registerSignUpRoute registers the signup endpoint
-func registerSignUpRoute(r *gin.Engine, trans ut.Translator) {
+// registerUserRoute registers the user endpoint
+func registerUserRoute(r *gin.Engine, trans ut.Translator) {
 	r.POST("/signup", controller.SignUpHandler(trans))
 	r.POST("/login", controller.LoginHandler(trans))
+	r.GET("/userinfo", middlewares.JWTAuthMiddleware(), controller.UserInfoHandler())
 }
-
-// func SignUpRoute() *gin.Engine {
-// 	// r := gin.New()
-// 	// r.Use(logger, Recovery)
-// 	// 使用默认的Gin
-// 	r := gin.Default()
-
-// 	r.POST("/signup", controller.SignUpHandler)
-
-// 	r.GET("/", func(c *gin.Context) {
-// 		c.String(http.StatusOK, "OK")
-// 	})
-
-// 	r.NoRoute(func(c *gin.Context) {
-// 		c.JSON(http.StatusNotFound, gin.H{
-// 			"msg": "Not Found",
-// 		})
-// 	})
-// }

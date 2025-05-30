@@ -3,6 +3,7 @@ package logic
 import (
 	"bluebell/dao/mysql"
 	"bluebell/models"
+	"bluebell/pkg/jwt"
 	"bluebell/pkg/snowflake"
 	"database/sql"
 	"errors"
@@ -33,17 +34,18 @@ func SignUp(p models.ParamSignUp) error {
 }
 
 // Login handles the user login logic
-func Login(p models.ParamLogin) error {
+func Login(p models.ParamLogin) (string, error) {
 	u, err := mysql.QueryUserByUsername(p.Username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return ErrUserNotFound
+			return "", ErrUserNotFound
 		}
-		return err
+		return "", err
 	}
 	ok := mysql.CheckPasswordEquals(u.Password, p.Password)
 	if !ok {
-		return ErrUserNotFound
+		return "", ErrUserNotFound
 	}
-	return nil
+	// jwt
+	return jwt.GenToken(u.UserID)
 }
