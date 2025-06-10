@@ -15,20 +15,20 @@ func main() {
 		fmt.Printf("Init Config error: %v\n", err)
 		return
 	}
-	
+
 	// 初始化 mysql
 	if err := mysql.Init(); err != nil {
 		fmt.Printf("Init mysql error: %v\n", err)
 		return
 	}
 	defer mysql.GetDB().Close()
-	
+
 	// 初始化 UUID
 	if err := snowflake.Init("2020-11-01", 1); err != nil {
-		fmt.Printf("Init snowflake error: %v \n", err)
+		fmt.Printf("Init snowflake error: %v\n", err)
 		return
 	}
-	
+
 	// 初始化全局翻译器
 	trans, err := controller.InitTrans("zh")
 	if err != nil {
