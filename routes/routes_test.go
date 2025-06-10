@@ -145,3 +145,92 @@ func TestUserInfoRoute_WithRealToken(t *testing.T) {
 		})
 	}
 }
+
+// Mock controller for CommunityHandler
+func mockCommunityHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		_, exists := c.Get("userID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"msg": "Unauthorized"})
+			return
+		}
+		// 假设返回一个社区对象
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "成功",
+			"data": gin.H{"id": 1, "name": "Tech"},
+		})
+	}
+}
+
+// go test -v -run ^TestCommunityRoute$ your_package/routes
+func TestCommunityRoute(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name           string
+		mockMiddleware gin.HandlerFunc
+		headerKey      string
+		headerValue    string
+		expectedStatus int
+		expectedBody   string
+	}{
+		{
+			name:           "Success",
+			mockMiddleware: mockJWTAuthMiddleware(true),
+			headerKey:      "Authorization",
+			headerValue:    "Bearer valid_token",
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"msg":"成功","data":{"id":1,"name":"Tech"}}`,
+		},
+		{
+			name:           "Failure - invalid token",
+			mockMiddleware: mockJWTAuthMiddleware(false),
+			headerKey:      "Authorization",
+			headerValue:    "Bearer invalid_token",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   `{"msg":"Invalid token"}`,
+		},
+		{
+			name:           "Failure - missing header",
+			mockMiddleware: mockJWTAuthMiddleware(false),
+			headerKey:      "",
+			headerValue:    "",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   `{"msg":"Invalid token"}`,
+		},
+		{
+			name:           "Failure - empty token",
+			mockMiddleware: mockJWTAuthMiddleware(false),
+			headerKey:      "Authorization",
+			headerValue:    "Bearer ",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   `{"msg":"Invalid token"}`,
+		},
+		{
+			name:           "Failure - wrong header key",
+			mockMiddleware: mockJWTAuthMiddleware(false),
+			headerKey:      "authorization", // 小写
+			headerValue:    "Bearer invalid_token",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   `{"msg":"Invalid token"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := gin.New()
+			r.GET("/community", tt.mockMiddleware, mockCommunityHandler())
+
+			req, _ := http.NewRequest(http.MethodGet, "/community", nil)
+			if tt.headerKey != "" {
+				req.Header.Set(tt.headerKey, tt.headerValue)
+			}
+			w := httptest.NewRecorder()
+
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			assert.JSONEq(t, tt.expectedBody, w.Body.String())
+		})
+	}
+}

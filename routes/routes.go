@@ -17,6 +17,7 @@ func Init(trans ut.Translator) *gin.Engine {
 	registerDefaultRoute(r)
 	registerNotFoundRoute(r)
 	registerUserRoute(r, trans)
+	registerPostRoute(r)
 
 	return r
 }
@@ -38,4 +39,9 @@ func registerUserRoute(r *gin.Engine, trans ut.Translator) {
 	r.POST("/signup", controller.SignUpHandler(trans))
 	r.POST("/login", controller.LoginHandler(trans))
 	r.GET("/userinfo", middlewares.JWTAuthMiddleware(), controller.UserInfoHandler())
+}
+
+// registerPostRoute registers the post endpoint
+func registerPostRoute(r *gin.Engine) {
+	r.GET("/community", middlewares.JWTAuthMiddleware(), controller.CommunityHandler())
 }
