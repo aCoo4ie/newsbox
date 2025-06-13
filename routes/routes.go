@@ -44,4 +44,5 @@ func registerUserRoute(r *gin.Engine, trans ut.Translator) {
 // registerPostRoute registers the post endpoint
 func registerPostRoute(r *gin.Engine) {
 	r.GET("/community", middlewares.JWTAuthMiddleware(), controller.CommunityHandler())
+	r.GET("/community/:id", middlewares.JWTAuthMiddleware(), controller.CommunityDetailHandler())
 }
